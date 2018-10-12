@@ -1,6 +1,6 @@
 from holam import Reader
+from holam import exScrape
 
 
-
-crawler = Reader("new.csv")
-crawler.read()
+crawler = exScrape("nl_NL", "canada-new-england")
+crawler.visit()
