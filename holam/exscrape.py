@@ -5,6 +5,7 @@ import pandas as pd
 from selenium import webdriver
 import time
 from langdetect import detect
+import os
 
 class exScrape(object):
 	def __init__(self, lang, region):
@@ -70,9 +71,15 @@ class exScrape(object):
 			details[url]["translated"] = "n"
 			if len(heroimg) != 0:
 				heroimg = driver.find_element_by_class_name("image-lazy-loader")
-				if "sunset-water" in heroimg.find_element_by_tag_name("img").get_attribute("src"):
+				
+				if str(heroimg.find_element_by_tag_name("img").get_attribute("src")).find("sunset-water") != -1:
 					details[url]["hero image"] = "n"
-				details[url]["hero image"] = "y"
+				elif str(heroimg.find_element_by_tag_name("img").get_attribute("src")).find("ship-quarter--10") != -1: 
+					details[url]["hero image"] = "n"
+				elif str(heroimg.find_element_by_tag_name("img").get_attribute("src")).find("ship-side--10") != -1:
+					details[url]["hero image"] = "n"
+				else:
+					details[url]["hero image"] = "y"
 			else:
 				details[url]["hero image"] = "n"
 			
@@ -97,6 +104,8 @@ class exScrape(object):
 				details[url]["translated"] = "n"
 		
 		if "en" in self.lang:
+			if os.path.exists("en_US.txt"):
+				os.remove("en_US.txt")
 			with open("en_US.txt", "a") as enfile:
 				enfile.write(str(details))
 			with open(self.lang+".csv", "w", newline="") as csvfile:
@@ -118,7 +127,8 @@ class exScrape(object):
 					details[url]["ineng"] = "n"
 				
 		print(details)
-		
+		if os.path.exists(self.lang+".csv"):
+			os.remove(self.lang+".csv")
 		with open(self.lang+".csv", "w", newline="") as csvfile:
 			exwriter = csv.writer(csvfile)
 			if self.lang == "en_US":
