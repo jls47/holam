@@ -11,6 +11,7 @@ def compare(fname1, fname2):
 		
 		print(data)
 		for thing in data:
+			print(thing)
 			data1.append(thing)
 			
 	with open(fname2) as csvfile:

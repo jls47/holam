@@ -97,8 +97,8 @@ class exScrape(object):
 				details[url]["translated"] = "n"
 		
 		if "en" in self.lang:
-			with open(self.lang+".txt", "a") as enfile:
-				enfile.write(details)
+			with open("en_US.txt", "a") as enfile:
+				enfile.write(str(details))
 			with open(self.lang+".csv", "w", newline="") as csvfile:
 				exwriter = csv.writer(csvfile)
 				exwriter.writerow(["Hero Image", "Details", "Description", "Name", "Excursion Link"])
@@ -106,7 +106,7 @@ class exScrape(object):
 					exwriter.writerow([details[key]["hero image"], details[key]["details"], details[key]["description"], details[key]["title"], str(key)])
 		else:
 			data = ""
-			with open('new.txt', 'r') as newfile:
+			with open('en_US.txt', 'r') as newfile:
 				data = newfile.read().replace('\n', '').replace("en_US", self.lang)
 				print(data)
 			for url in details:
