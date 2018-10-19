@@ -7,7 +7,7 @@ import time
 from langdetect import detect
 import os
 
-class exScrape(object):
+class portScrape(object):
 	def __init__(self, lang, region):
 		self.lang = lang
 		self.region = region
@@ -36,7 +36,7 @@ class exScrape(object):
 				if '-5' in str(item):
 					item.click()
 		
-		url = "https://www.hollandamerica.com/"+self.lang+"/cruise-destinations/"+self.region+".excursions.html#sort=name%20asc&start=0&rows=12?"
+		url = "https://www.hollandamerica.com/"+self.lang+"/cruise-destinations/"+self.region+".ports.html#sort=name%20asc&start=0&rows=12?"
 		driver.get(url)
 		page = int(driver.find_element_by_class_name("current-page").get_attribute("innerText"))
 		pages = int(driver.find_element_by_class_name("total-pages").get_attribute("innerText"))
@@ -49,29 +49,16 @@ class exScrape(object):
 				page = int(driver.find_element_by_class_name("current-page").get_attribute("innerText"))
 				time.sleep(2)
 				print(next)
-				links = driver.find_elements_by_class_name("see-details-cta-label")
-				for link in links:
+				tiles = driver.find_elements_by_class_name("port-detail-tile")
+				for tile in tiles:
+					link = tile.find_element_by_tag_name("a")
 					if link.get_attribute("href") in list(details.keys()):
 						details[(link.get_attribute("href")) + "#"] = {}
-						if "en" in self.lang:
-							details[(link.get_attribute("href")) + "#"]["title"] = link.get_attribute("aria-label").replace("See Details ","") + " (d)"
-						elif "es" in self.lang:
-							details[(link.get_attribute("href")) + "#"]["title"] = link.get_attribute("aria-label").replace("Ver detalles ","") + " (d)"
-						elif "de" in self.lang:
-							details[(link.get_attribute("href")) + "#"]["title"] = link.get_attribute("aria-label").replace("Details ansehen ","") + " (d)"
-						else:
-							details[(link.get_attribute("href")) + "#"]["title"] = link.get_attribute("aria-label").replace("Bekijk details ","") + " (d)"
+						details[(link.get_attribute("href")) + "#"]["title"] = link.get_attribute("title") + " (d)"
 					else:	
 						details[(link.get_attribute("href"))] = {}
-						if "en" in self.lang:
-							details[(link.get_attribute("href"))]["title"] = link.get_attribute("aria-label").replace("See Details ","")
-						elif "es" in self.lang:
-							details[(link.get_attribute("href"))]["title"] = link.get_attribute("aria-label").replace("Ver detalles ","")
-						elif "de" in self.lang:
-							details[(link.get_attribute("href"))]["title"] = link.get_attribute("aria-label").replace("Details ansehen ","")
-						else:
-							details[(link.get_attribute("href"))]["title"] = link.get_attribute("aria-label").replace("Bekijk details ","")
-					
+						details[(link.get_attribute("href"))]["title"] = link.get_attribute("title")
+						
 				page = int(driver.find_element_by_class_name("current-page").get_attribute("innerText"))
 				if page < pages:
 					next[0].click()
@@ -86,24 +73,27 @@ class exScrape(object):
 		print(next)
 		links = driver.find_elements_by_class_name("see-details-cta-label")
 		for link in links:
-			href = link.get_attribute("href")
-			if href in list(details.keys()):
-				href += "#"
-			elif link.get_attribute("href") + "#" in list(details.keys()):
-				href += "##"
-			details[href] = {}
-				
-			if "en" in self.lang:
-				details[href]["title"] = link.get_attribute("aria-label").replace("See Details ","")
-			elif "es" in self.lang:
-				details[href]["title"] = link.get_attribute("aria-label").replace("Ver detalles ","")
-			elif "de" in self.lang:
-				details[href]["title"] = link.get_attribute("aria-label").replace("Details ansehen ","")
-			else:
-				details[href]["title"] = link.get_attribute("aria-label").replace("Bekijk details ","")
+			if link.get_attribute("href") in list(details.keys()):
+				details[(link.get_attribute("href")) + "#"] = {}
+				if "en" in self.lang:
+					details[(link.get_attribute("href")) + "#"]["title"] = link.get_attribute("aria-label").replace("See Details ","") + " (d)"
+				elif "es" in self.lang:
+					details[(link.get_attribute("href")) + "#"]["title"] = link.get_attribute("aria-label").replace("Ver detalles ","") + " (d)"
+				elif "de" in self.lang:
+					details[(link.get_attribute("href")) + "#"]["title"] = link.get_attribute("aria-label").replace("Details ansehen ","") + " (d)"
+				else:
+					details[(link.get_attribute("href")) + "#"]["title"] = link.get_attribute("aria-label").replace("Bekijk details ","") + " (d)"
+			else:	
+				details[(link.get_attribute("href"))] = {}
+				if "en" in self.lang:
+					details[(link.get_attribute("href"))]["title"] = link.get_attribute("aria-label").replace("See Details ","")
+				elif "es" in self.lang:
+					details[(link.get_attribute("href"))]["title"] = link.get_attribute("aria-label").replace("Ver detalles ","")
+				elif "de" in self.lang:
+					details[(link.get_attribute("href"))]["title"] = link.get_attribute("aria-label").replace("Details ansehen ","")
+				else:
+					details[(link.get_attribute("href"))]["title"] = link.get_attribute("aria-label").replace("Bekijk details ","")
 			
-			if "#" in href:
-				details[href]["title"] += " (d)"
 					
 		
 		for url in details:
@@ -114,7 +104,7 @@ class exScrape(object):
 			details[url]["translated"] = "n"
 			if len(heroimg) != 0:
 				heroimg = driver.find_element_by_class_name("image-lazy-loader")
-				
+				details[url]["imgsrc"] = heroimg.find_element_by_tag_name("img").get_attribute("src")
 				if str(heroimg.find_element_by_tag_name("img").get_attribute("src")).find("sunset-water") != -1:
 					details[url]["hero image"] = "y (placeholder)"
 				elif str(heroimg.find_element_by_tag_name("img").get_attribute("src")).find("ship-quarter--10") != -1: 
@@ -125,7 +115,7 @@ class exScrape(object):
 					details[url]["hero image"] = "y (placeholder)"
 				elif str(heroimg.find_element_by_tag_name("img").get_attribute("src")).find("water--10") != -1:
 					details[url]["hero image"] = "y (placeholder)"
-				elif str(heroimg.find_element_by_tag_name("img").get_attribute("src")).startswith("#.image") != -1:
+				elif str(heroimg.find_element_by_tag_name("img").get_attribute("src")).find("#.image") != -1:
 					details[url]["hero image"] = "y (placeholder)"
 				else:
 					details[url]["hero image"] = "n"
@@ -141,15 +131,46 @@ class exScrape(object):
 			desc = driver.find_elements_by_class_name("desc")
 			if len(desc) != 0:
 				details[url]["description"] = "n"
-				if "en" not in self.lang and len(desc[0].find_elements_by_tag_name("p")) != 0:
-					text = desc[0].find_element_by_tag_name("p").get_attribute("innerText")
-					if len(text) > 10:
-						tlang = detect(text)
+				if "en" not in self.lang and len(desc) != 0:
+					if len(desc[0].find_elements_by_tag_name("p")) != 0:
+						text = desc[0].find_element_by_tag_name("p").get_attribute("innerText")
+						details[url]["shortdesctext"] = text
+						details[url]["longdesctext"] = text
+						
+						details[url]["translated"] = "n"
+						if len(text) > 10:
+							tlang = detect(text)
+							if tlang in self.lang:
+								details[url]["translated"] = "y"
+							else:
+								details[url]["translated"] = "n"
+						if "coming soon" in desc[0].find_element_by_tag_name("p").get_attribute("innerText"):
+							details[url]["description"] = "needscopy"
+					else:
+						details[url]["shortdesctext"] = desc[0].get_attribute("innerText")
+						details[url]["longdesctext"] = desc[0].get_attribute("innerText")
+				else:
+					details[url]["desctext"] = desc[0].get_attribute("innerText")
+					tlang = detect(details[url]["desctext"])
+					buttons = driver.find_elements_by_class_name("readmoreLink")
+					if len(buttons) != 0:
+						button = driver.find_element_by_class_name("readmoreLink")
+						readmore = button.find_element_by_tag_name("a")
+						readmore.click()
+						newtext = desc[0].find_elements_by_tag_name("p")
+						details[url]["longdesctext"] = ""
+						for item in newtext:
+							newthing = item.get_attribute("innerText")
+							details[url]["longdesctext"] += newthing
 						if tlang in self.lang:
 							details[url]["translated"] = "y"
 						else:
 							details[url]["translated"] = "n"
+						details[url]["description"] = "n"
+					else:
+						details[url]["longdesctext"] = ""
 			else: 
+				details[url]["desctext"] = "???"
 				details[url]["description"] = "y"
 				details[url]["translated"] = "n"
 		
@@ -158,11 +179,11 @@ class exScrape(object):
 				os.remove("en_US.txt")
 			with open("en_US.txt", "a") as enfile:
 				enfile.write(str(details))
-			with open(self.lang+".csv", "w", newline="") as csvfile:
+			with open(self.lang+""+".csv", "w", newline="") as csvfile:
 				exwriter = csv.writer(csvfile)
-				exwriter.writerow(["Hero Image", "Details", "Description", "Name", "Excursion Link"])
+				exwriter.writerow(["Hero Image", "imgsrc", "Details", "Description", "desctext", "longtext", "Name", "Excursion Link"])
 				for key in details:
-					exwriter.writerow([details[key]["hero image"], details[key]["details"], details[key]["description"], details[key]["title"], str(key)])
+					exwriter.writerow([details[key]["hero image"], details[key]["imgsrc"], details[key]["details"], details[key]["description"], str(details[key]["desctext"]), str(details[key]["longdesctext"]), details[key]["title"], str(key)])
 		else:
 			data = ""
 			with open('en_US.txt', 'r') as newfile:
@@ -183,18 +204,18 @@ class exScrape(object):
 					details[url]["inen"] = "y"
 				
 		print(details)
-		if os.path.exists(self.lang+".csv"):
-			os.remove(self.lang+".csv")
-		with open(self.lang+".csv", "w", newline="") as csvfile:
+		if os.path.exists(self.lang+""+self.region+".csv"):
+			os.remove(self.lang+""+self.region+".csv")
+		with open(self.lang+""+self.region+".csv", "w", newline="") as csvfile:
 			exwriter = csv.writer(csvfile)
 			if self.lang == "en_US":
-				exwriter.writerow(["Hero Image", "Details", "Description", "Name", "Excursion Link"])
+				exwriter.writerow(["Hero Image", "imgsrc", "Details", "Description", "desctext", "longtext", "Name", "Excursion Link"])
 				for key in details:
-					exwriter.writerow([details[key]["hero image"], details[key]["details"], details[key]["description"], details[key]["title"], str(key)])
+					exwriter.writerow([details[key]["hero image"], details[key]["imgsrc"], details[key]["details"], details[key]["description"], details[key]["desctext"], details[key]["longdesctext"], details[key]["title"], str(key)])
 			else:
 				exwriter.writerow(["Hero Image", "Details", "Description", "in en search", "in en site", "translated", "name", "Excursion Link"])
 				for key in details:
-					exwriter.writerow([details[key]["hero image"], details[key]["details"], details[key]["description"], details[key]["inengsearch"], details[key]["inen"], details[key]["translated"], details[key]["title"], str(key)])
+					exwriter.writerow([details[key]["hero image"], details[key]["details"], details[key]["description"], str(details[key]["shortdesctext"]), details[key]["inengsearch"], details[key]["inen"], details[key]["translated"], details[key]["title"], str(key)])
 			
 		
 		

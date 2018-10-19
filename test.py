@@ -1,6 +1,7 @@
 from holam import Reader
 from holam import exScrape
+from holam import portScrape
 
-
-crawler = exScrape("nl_NL", "canada-new-england")
+crawler = exScrape("en_US", "europe")
+#crawler = portScrape("en_US", "asia")
 crawler.visit()
